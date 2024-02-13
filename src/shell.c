@@ -33,18 +33,26 @@ int main()
 		if (l->out) printf("out: %s\n", l->out);
 
 		/* Display each command of the pipe */
-		for (i=0; l->seq[i]!=0; i++) {
-			char **cmd = l->seq[i];
-			printf("seq[%d]: ", i);
-			for (j=0; cmd[j]!=0; j++) {
-				printf("%s ", cmd[j]);
-			}
-			printf("\n");
-		}
-		if (strcmp(l->seq[0],"quit")){
+		displaycmd(l);
+
+		/*quiting*/
+		if (!strcmp(l->seq[0][0],"quit")){
+			printf("%s\n",l->seq[0][0]);
 			printf("Exiting...\n");
 			exit(0);
 		}
 		
 	}
+}
+
+void displaycmd(struct cmdline *l ){
+	for (int i=0; l->seq[i]!=0; i++) {
+		char **cmd = l->seq[i];
+		printf("seq[%d]: ", i);
+		for (int j=0; cmd[j]!=0; j++) {
+			printf("%s ", cmd[j]);
+		}
+		printf("\n");
+	}
+
 }
