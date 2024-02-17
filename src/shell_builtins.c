@@ -4,12 +4,31 @@
 #include "shell_builtins.h"
 
 
-int is_builtin(struct cmdline* l){
-	return  (!strcmp(l->seq[0][0], "echo") || 
-		 	 !strcmp(l->seq[0][0], "pwd") ||
-		 	 !strcmp(l->seq[0][0], "whoami")
-		 );
+void builtin_process(struct cmdline* l){
+    enum BUILTINS command = analyse_command(l->seq[0]);
+    switch (command)
+    {
+    case B_ECHO:
+    printf("%s", l->seq[0][1]);
+        break;
+    case B_PWD:
+        break;
+    case B_WHO:
+        break;
+    default:
+        break;
+    }
 }
 
-void builtin_handler(){}
-
+enum BUILTINS analyse_command(char **l){
+    if (!strcmp(l[0],"echo")){
+        return B_ECHO;
+    }
+    else if(!strcmp(l[0],"pwd")){
+        return B_PWD;
+    }
+    else if(!strcmp(l[0],"whoami")){
+        return B_WHO;
+    }
+    
+}

@@ -7,6 +7,10 @@
         B_WHO 
     };
 
+
     void builtin_handler();
     int is_builtin(struct cmdline *l);
+
+    void builtin_handler(struct cmdline* l);
+
 #endif

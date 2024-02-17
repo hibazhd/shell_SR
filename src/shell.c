@@ -8,6 +8,7 @@
 #include "csapp.h"
 #include "shell_builtins.h"
 
+
 int external_handler(struct cmdline *l){
 	int pid_child;
 	if((pid_child= Fork())==0){ /*child */
@@ -23,6 +24,7 @@ int external_handler(struct cmdline *l){
 	}
 	return 0;
 }
+
 
 int main(){
 	while (1) {
