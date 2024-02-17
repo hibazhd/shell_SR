@@ -8,26 +8,30 @@
 #include "csapp.h"
 #include "shell_builtins.h"
 
-int main()
-{
+
+int external_handler(struct cmdline *l){
+	int pid_child;
+	if((pid_child= Fork())==0){ /*child */
+		
+		int res = execvp(l->seq[0][0],l->seq[0]);
+		if(res < 0){
+			fprintf(stderr,"exec failed\n");
+			exit(1);
+		}
+	}
+	else{ /*pere*/
+		Waitpid(pid_child, NULL, 0);
+	}
+	return 0;
+}
+
+
+int main(){
 	while (1) {
 		struct cmdline *l;
-		int i, j;
 
 		printf("shell> ");
 		l = readcmd();
-
-		if (l->err) {
-			/* Syntax error, read another command */
-			printf("error: %s\n", l->err);
-			continue;
-		}
-
-		if (l->in) printf("in: %s\n", l->in);
-		if (l->out) printf("out: %s\n", l->out);
-
-		/* Display each command of the pipe */
-		displaycmd(l);
 
 		/*quitting*/
 		if (!strcmp(l->seq[0][0],"quit")){
@@ -36,9 +40,12 @@ int main()
 			exit(0);
 		}
 		
-		/* Handling Builtins */
-		if(is_builtin(l)){
-			builtin_handler(l);
+		
+		if(is_builtin(l)){/* Handling Builtins */
+			builtin_handler(l);/* executing Builtins */
+		}
+		else{
+			external_handler(l); /* executing externals */
 		}
 			
 		
@@ -57,9 +64,4 @@ void displaycmd(struct cmdline *l ){
 
 }
 
-int is_builtin(struct cmdline* l){
-	return  (!strcmp(l->seq[0][0], "echo") || 
-		 	 !strcmp(l->seq[0][0], "pwd") ||
-		 	 !strcmp(l->seq[0][0], "whoami")
-		 );
-}
+
