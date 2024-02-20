@@ -37,7 +37,7 @@ int main(){
 			nb_pipes++;
 		}
 		if(nb_pipes!=1){
-			pipe_n_instructions(l, nb_pipes-1);
+			pipe_n_instructions(l, nb_pipes);
 			continue;
 		}
 		

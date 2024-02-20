@@ -2,61 +2,74 @@
 #include "piping.h"
 
 void write_in_pipe(int fd[2]){
-    Close(fd[0]);
-    Close(STDOUT_FILENO); // Close standard output
+    close(fd[0]);
+    close(STDOUT_FILENO); // Close standard output
     Dup2(fd[1], STDOUT_FILENO); // Redirect stdout to the writing end of the pipe
-    Close(fd[1]); // Close the writing end of the pipe
+    close(fd[1]); // Close the writing end of the pipe
 }
 
 void read_from_pipe(int fd[2]){
-    Close(fd[1]); // Close writing end of the pipe
-    Close(STDIN_FILENO); // Close standard input
+    close(fd[1]); // Close writing end of the pipe
+    close(STDIN_FILENO); // Close standard input
     Dup2(fd[0], STDIN_FILENO); // Redirect stdin to the reading end of the pipe
-    Close(fd[0]); // Close the reading end of the pipe
+    close(fd[0]); // Close the reading end of the pipe
 }
 
 void pipe_n_instructions(struct cmdline* l, int nb_comms){
     
-    int fd[2];
-    pipe(fd);
-    int nb_comms_execute = 0;
-    if ((Fork())==0){
-        nb_comms_execute++;
-        if(l->in){
-			int f_in = Open(l->in,O_RDONLY,S_IRUSR|S_IWUSR);
-			Dup2(f_in, 0);
-		}
+    int pipes[nb_comms - 1][2]; // Create an array of pipes for communication between commands
 
-        write_in_pipe(fd);
-		if(execvp(l->seq[0][0],l->seq[0]) < 0){
-			fprintf(stderr,"Unknown Command\n");
-			exit(1);
-		}
+    // Create pipes
+    for (int i = 0; i < nb_comms - 1; i++) {
+        if (pipe(pipes[i]) < 0) {
+            perror("Pipe creation failed");
+            exit(1);
+        }
     }
 
-    else{
+    // Fork and execute commands
+    for (int i = 0; i < nb_comms; i++) {
+        if (Fork() == 0) { // Child process
+            // Set up redirections
+            if (i > 0) { // If not the first command
+                read_from_pipe(pipes[i - 1]); // Redirect stdin from the previous pipe
+            }
+            if (i < nb_comms - 1) { // If not the last command
+                write_in_pipe(pipes[i]); // Redirect stdout to the current pipe
+            }
 
-        while(nb_comms_execute!=nb_comms-1){
-            
-        }
+            // Handle input/output redirection
+            if (l->in) {
+                int f_in = Open(l->in, O_RDONLY, S_IRUSR | S_IWUSR);
+                Dup2(f_in, 0);
+            }
+            if (l->out) {
+                int f_out = Open(l->out, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+                Dup2(f_out, 1);
+            }
 
-        if ((Fork())==0){
-
-            if(l->out){
-			    int f_out = Open(l->out, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR);
-			    Dup2(f_out, 1);
-		    }
-
-            read_from_pipe(fd);
-            
-            if(execvp(l->seq[1][0],l->seq[1]) < 0){
-                fprintf(stderr,"Unknown Command\n");
+            // Execute the command
+            if (execvp(l->seq[i][0], l->seq[i]) < 0) {
+                fprintf(stderr, "Unknown Command\n");
                 exit(1);
             }
+        } else { // Parent process
+            // Close unnecessary pipe ends
+            if (i > 0) {
+                close(pipes[i - 1][0]); // Close reading end of the previous pipe
+                close(pipes[i - 1][1]); // Close writing end of the previous pipe
+            }
         }
-        Close(fd[1]); // Close reading end of the pipe in the parent
-        Close(fd[0]); // Close writing end of the pipe in the parent
-        Wait(NULL); // Wait for both child processes to finish
+    }
+
+    // Close all pipe ends in the parent process
+    for (int i = 0; i < nb_comms - 1; i++) {
+        close(pipes[i][0]);
+        close(pipes[i][1]);
+    }
+
+    // Wait for all child processes to finish
+    for (int i = 0; i < nb_comms; i++) {
         Wait(NULL);
     }
 }
