@@ -8,6 +8,7 @@
 #include "csapp.h"
 #include "shell_builtins.h"
 #include "external_commands.h"
+#include "piping.h"
 
 void displaycmd(struct cmdline *l ){
 	for (int i=0; l->seq[i]!=0; i++) {
@@ -29,10 +30,22 @@ int main(){
 
 		printf("shell> ");
 		l = readcmd();
-
+		
+			/*Récupération du nombres de tubes*/
+		int nb_pipes = 0;
+		while(l->seq[nb_pipes]!=NULL){
+			nb_pipes++;
+		}
+		if(nb_pipes!=1){
+			pipe_n_instructions(l, nb_pipes-1);
+			continue;
+		}
+		
 		/* Handling Builtins */
-		if(!builtin_process(l)) /*executing Builtins */
+		if(!builtin_process(l)){/*executing Builtins */
 			external_process(l);  /* executing externals */
+		}
+			
 		
 		
 			/*quitting*/

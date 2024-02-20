@@ -19,8 +19,8 @@ int external_process(struct cmdline *l){
 		}
 
 
-		int res = execvp(l->seq[0][0],l->seq[0]);
-		if(res < 0){
+		
+		if(execvp(l->seq[0][0],l->seq[0]) < 0){
 			fprintf(stderr,"Unknown Command\n");
 			exit(1);
 		}
