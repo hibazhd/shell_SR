@@ -22,7 +22,13 @@ void displaycmd(struct cmdline *l ){
 
 }
 
-
+int get_number_of_pipes(char*** seq){
+	int nb_pipes=0;
+	while(seq[nb_pipes]!=NULL){
+		nb_pipes++;
+	}
+	return nb_pipes;
+}
 
 int main(){
 	while (1) {
@@ -32,14 +38,15 @@ int main(){
 		l = readcmd();
 		
 			/*Récupération du nombres de tubes*/
-		int nb_pipes = 0;
-		while(l->seq[nb_pipes]!=NULL){
-			nb_pipes++;
-		}
-		if(nb_pipes!=1){
+		
+		int nb_pipes = get_number_of_pipes(l->seq);
+		if(nb_pipes>1){
 			pipe_n_instructions(l, nb_pipes);
 			continue;
-		}
+		} 
+		/*Utilisation de continue pour éviter de rajouter une clause else 
+		et faire moins de nesting, pour auguementer la lisibilité*/
+		
 		
 		/* Handling Builtins */
 		if(!builtin_process(l)){/*executing Builtins */
