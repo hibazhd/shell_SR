@@ -9,7 +9,8 @@
 #include <limits.h>
 #include <string.h>
 #include "readcmd.h"
-
+#include <readline/readline.h>
+#include <readline/history.h>
 
 static void memory_error(void)
 {
@@ -36,34 +37,34 @@ static void *xrealloc(void *ptr, size_t size)
 
 
 /* Read a line from standard input and put it in a char[] */
-static char *readline(void)
-{
-	size_t buf_len = 16;
-	char *buf = xmalloc(buf_len * sizeof(char));
+// static char *readline(void)
+// {
+// 	size_t buf_len = 16;
+// 	char *buf = xmalloc(buf_len * sizeof(char));
 
-	if (fgets(buf, buf_len, stdin) == NULL) {
-		free(buf);
-		return NULL;
-	}
+// 	if (fgets(buf, buf_len, stdin) == NULL) {
+// 		free(buf);
+// 		return NULL;
+// 	}
 	
-	if (feof(stdin)) { /* End of file (ctrl-d) */
-	    fflush(stdout);
-	    exit(0);
-	}
+// 	if (feof(stdin)) { /* End of file (ctrl-d) */
+// 	    fflush(stdout);
+// 	    exit(0);
+// 	}
 
-	do {
-		size_t l = strlen(buf);
-		if ((l > 0) && (buf[l-1] == '\n')) {
-			l--;
-			buf[l] = 0;
-			return buf;
-		}
-		if (buf_len >= (INT_MAX / 2)) memory_error();
-		buf_len *= 2;
-		buf = xrealloc(buf, buf_len * sizeof(char));
-		if (fgets(buf + l, buf_len - l, stdin) == NULL) return buf;
-	} while (1);
-}
+// 	do {
+// 		size_t l = strlen(buf);
+// 		if ((l > 0) && (buf[l-1] == '\n')) {
+// 			l--;
+// 			buf[l] = 0;
+// 			return buf;
+// 		}
+// 		if (buf_len >= (INT_MAX / 2)) memory_error();
+// 		buf_len *= 2;
+// 		buf = xrealloc(buf, buf_len * sizeof(char));
+// 		if (fgets(buf + l, buf_len - l, stdin) == NULL) return buf;
+// 	} while (1);
+// }
 
 
 /* Split the string in words, according to the simple shell grammar. */
@@ -162,7 +163,7 @@ struct cmdline *readcmd(void)
 	char ***seq;
 	size_t cmd_len, seq_len;
 
-	line = readline();
+	line = readline("shell> ");
 	if (line == NULL) {
 		if (s) {
 			freecmd(s);
@@ -170,6 +171,7 @@ struct cmdline *readcmd(void)
 		}
 		return static_cmdline = 0;
 	}
+	
 
 	cmd = xmalloc(sizeof(char *));
 	cmd[0] = 0;
@@ -179,6 +181,8 @@ struct cmdline *readcmd(void)
 	seq_len = 0;
 
 	words = split_in_words(line);
+
+	add_history(line);
 	free(line);
 
 	if (!s)
@@ -189,6 +193,7 @@ struct cmdline *readcmd(void)
 	s->in = 0;
 	s->out = 0;
 	s->seq = 0;
+	s->bg = 0;
 
 	i = 0;
 	while ((w = words[i++]) != 0) {
@@ -223,7 +228,6 @@ struct cmdline *readcmd(void)
 				s->err = "misplaced pipe";
 				goto error;
 			}
-
 			seq = xrealloc(seq, (seq_len + 2) * sizeof(char **));
 			seq[seq_len++] = cmd;
 			seq[seq_len] = 0;
@@ -232,6 +236,13 @@ struct cmdline *readcmd(void)
 			cmd[0] = 0;
 			cmd_len = 0;
 			break;
+		case '&':
+			if (cmd_len == 0) {
+				s->err = "misplaced &";
+				goto error;
+			}
+			s->bg = 1;
+			break; 	
 		default:
 			cmd = xrealloc(cmd, (cmd_len + 2) * sizeof(char *));
 			cmd[cmd_len++] = w;

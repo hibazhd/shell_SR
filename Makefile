@@ -4,16 +4,16 @@
 .SUFFIXES:
 
 CC=gcc
-CFLAGS=-Wall -g
+CFLAGS=-Wall -g 
 VPATH=src/
 
 # Note: -lnsl does not seem to work on Mac OS but will
 # probably be necessary on Solaris for linking network-related functions 
 #LIBS += -lsocket -lnsl -lrt
-LIBS+=-lpthread
+LIBS+=-lpthread -lreadline
 
-INCLUDE = readcmd.h csapp.h shell_builtins.h
-OBJS = readcmd.o csapp.o shell_builtins.o
+INCLUDE = readcmd.h csapp.h shell_builtins.h external_commands.h piping.h background.h
+OBJS = readcmd.o csapp.o shell_builtins.o external_commands.o piping.o background.o
 INCLDIR = -I.
 
 all: shell
@@ -22,7 +22,7 @@ all: shell
 	$(CC) $(CFLAGS) $(INCLDIR) -c -o $@ $<
 
 %: %.o $(OBJS)
-	$(CC) -o $@ $(LDFLAGS) $^ $(LIBS)
+	$(CC) -o $@ $(LDFLAGS) $^ $(LIBS) 
 
 clean:
 	rm -f shell *.o

@@ -2,11 +2,12 @@
 #define _SHELL_BUILTINS_H
 #include "readcmd.h"
     enum BUILTINS{
+        B_INTERNAL,
         B_ECHO,
         B_PWD, 
         B_WHO 
     };
 
-    void builtin_handler();
-    int is_builtin(struct cmdline *l);
+    int builtin_process(struct cmdline* l);
+    int get_number_of_pipes(char*** seq);
 #endif

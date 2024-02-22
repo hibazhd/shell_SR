@@ -7,49 +7,9 @@
 #include "readcmd.h"
 #include "csapp.h"
 #include "shell_builtins.h"
-
-int external_handler(struct cmdline *l){
-	int pid_child;
-	if((pid_child= Fork())==0){ /*child */
-		
-		int res = execvp(l->seq[0][0],l->seq[0]);
-		if(res < 0){
-			fprintf(stderr,"exec failed\n");
-			exit(1);
-		}
-	}
-	else{ /*pere*/
-		Waitpid(pid_child, NULL, 0);
-	}
-	return 0;
-}
-
-int main(){
-	while (1) {
-		struct cmdline *l;
-
-		printf("shell> ");
-		l = readcmd();
-
-		/*quitting*/
-		if (!strcmp(l->seq[0][0],"quit")){
-			printf("%s\n",l->seq[0][0]);
-			printf("Exiting...\n");
-			exit(0);
-		}
-		
-		
-		if(is_builtin(l)){/* Handling Builtins */
-			builtin_handler(l);/* executing Builtins */
-		}
-		else{
-			external_handler(l); /* executing externals */
-		}
-			
-		
-	}
-}
-
+#include "external_commands.h"
+#include "piping.h"
+#include "background.h"
 void displaycmd(struct cmdline *l ){
 	for (int i=0; l->seq[i]!=0; i++) {
 		char **cmd = l->seq[i];
@@ -60,6 +20,55 @@ void displaycmd(struct cmdline *l ){
 		printf("\n");
 	}
 
+}
+
+
+
+int main(){
+	while (1) {
+		struct cmdline *l;
+
+		l = readcmd();
+		
+
+		if(l->err){
+			fprintf(stderr,"%s\n",l->err);
+			continue;
+		}
+
+		/*quitting*/
+		if (!strcmp(l->seq[0][0],"quit") ||
+			!strcmp(l->seq[0][0],"exit")){
+			printf("Exiting...\n");
+			exit(0);
+		}	
+
+		/*checking if command is meant to be ran in background*/
+
+		if(l->bg){
+			background_execute(l);
+			continue;
+		}
+			/*Récupération du nombres de tubes*/
+		int nb_pipes = get_number_of_pipes(l->seq);
+		if(nb_pipes>1){
+			pipe_n_instructions(l, nb_pipes);
+			continue;
+		} 
+
+
+		/*Utilisation de continue pour éviter de rajouter des clauses else 
+		et faire moins de nesting, pour auguementer la lisibilité*/
+		
+		
+		/* Handling Builtins */
+		if(!builtin_process(l)){/*executing Builtins */
+			external_process(l);  /* executing externals */
+		}
+			
+			
+		
+	}
 }
 
 
