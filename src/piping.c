@@ -1,6 +1,12 @@
 #include "csapp.h"
 #include "piping.h"
 
+void pipe_SIGINT_handler(int sig){
+    Kill(getppid(),SIGCHLD);
+    printf("\n");
+    exit(1);
+}
+
 int get_number_of_pipes(char*** seq){
 	int nb_pipes=0;
 	while(seq[nb_pipes]!=NULL){
@@ -36,8 +42,13 @@ void pipe_n_instructions(struct cmdline* l, int nb_comms){
     }
 
     // Fork and execute commands
-    for (int i = 0; i < nb_comms; i++) {        
-        if (Fork() == 0) { // Child process
+    for (int i = 0; i < nb_comms; i++) { 
+        pid_t child_pid;       
+        if ((child_pid = Fork() == 0)) { // Child process
+            
+            //Setting the group ID to the PID of the father +1
+            Signal(SIGINT, pipe_SIGINT_handler);
+
             // Set up redirections
             if (i > 0) { // If not the first command
                 read_from_pipe(pipes[i - 1]); // Redirect stdin from the previous pipe
@@ -62,6 +73,9 @@ void pipe_n_instructions(struct cmdline* l, int nb_comms){
                 exit(1);
             }
         } else { // Parent process
+            
+            
+
             // Close unnecessary pipe ends
             if (i > 0) {
                 close(pipes[i - 1][0]); // Close reading end of the previous pipe

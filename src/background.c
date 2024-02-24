@@ -24,8 +24,12 @@ void piping_instructions_background(struct cmdline* l, int nb_pipes){
       }
 
       // Fork and execute commands
-      for (int i = 0; i < nb_pipes; i++) {        
-            if (Fork() == 0) { // Child process
+      for (int i = 0; i < nb_pipes; i++) {   
+              
+            if (Fork() == 0) { // Child process   
+
+                  Signal(SIGINT, SIG_IGN);
+
                   // Set up redirections
                   if (i > 0) { // If not the first command
                   read_from_pipe(pipes[i - 1]); // Redirect stdin from the previous pipe
@@ -63,11 +67,6 @@ void piping_instructions_background(struct cmdline* l, int nb_pipes){
             close(pipes[i][0]);
             close(pipes[i][1]);
       }
-
-      // Wait for all child processes to finish
-      for (int i = 0; i < nb_pipes; i++) {
-            Wait(NULL);
-      }
 }
 
 void execute_external_background(struct cmdline* l){
@@ -97,12 +96,13 @@ pid_t background_execute(struct cmdline* l){
       Signal(SIGCHLD,SIGCHILD_handler);
 
 
+      int nb_pipes = get_number_of_pipes(l->seq);
+      if(nb_pipes>1){
+            piping_instructions_background(l, nb_pipes);     
+      }
+
 	if((pid_child = Fork())==0){ /*child */
-            int nb_pipes = get_number_of_pipes(l->seq);
-		if(nb_pipes>1){
-                  piping_instructions_background(l, nb_pipes);
-                  exit(0);
-            } else
+            Signal(SIGINT, SIG_IGN);
             if(!builtin_process(l)){/*executing Builtins */
                   execute_external_background(l);
             }

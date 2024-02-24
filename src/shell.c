@@ -23,11 +23,17 @@
 
 // }
 
+void SIGINT_handler(int sig){
+	printf("\nshell> ");
+}
 
 
 int main(){
+	
+	Signal(SIGINT, SIGINT_handler);
 	while (1) {
 		struct cmdline *l;
+		
 		
 
 		l = readcmd();
