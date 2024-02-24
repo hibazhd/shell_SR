@@ -1,6 +1,14 @@
 #include "csapp.h"
 #include "piping.h"
 
+int get_number_of_pipes(char*** seq){
+	int nb_pipes=0;
+	while(seq[nb_pipes]!=NULL){
+		nb_pipes++;
+	}
+	return nb_pipes;
+}
+
 void write_in_pipe(int fd[2]){
     close(fd[0]);
     close(STDOUT_FILENO); // Close standard output
@@ -28,7 +36,7 @@ void pipe_n_instructions(struct cmdline* l, int nb_comms){
     }
 
     // Fork and execute commands
-    for (int i = 0; i < nb_comms; i++) {
+    for (int i = 0; i < nb_comms; i++) {        
         if (Fork() == 0) { // Child process
             // Set up redirections
             if (i > 0) { // If not the first command

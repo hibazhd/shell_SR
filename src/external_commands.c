@@ -3,7 +3,7 @@
 #include "readcmd.h"
 #include "csapp.h"
 #include "external_commands.h"
-int external_process(struct cmdline *l){
+pid_t external_process(struct cmdline *l){
 	int pid_child;
 	if((pid_child= Fork())==0){ /*child */
 
@@ -28,5 +28,5 @@ int external_process(struct cmdline *l){
 	else{ /*pere*/
 		Waitpid(pid_child, NULL, 0);
 	}
-	return 0;
+	return pid_child;
 }

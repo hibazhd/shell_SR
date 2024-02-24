@@ -5,13 +5,7 @@
 #include "csapp.h"
 #include "shell_builtins.h"
 
-int get_number_of_pipes(char*** seq){
-	int nb_pipes=0;
-	while(seq[nb_pipes]!=NULL){
-		nb_pipes++;
-	}
-	return nb_pipes;
-}
+
 
 enum BUILTINS analyse_command(char **l){
     if (!strcmp(l[0],"echo")){

@@ -6,5 +6,5 @@
 #include "piping.h"
 #include "external_commands.h"
 #include <stdint.h>
-void background_execute(struct cmdline* l);
+pid_t background_execute(struct cmdline* l);
 #endif

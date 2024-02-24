@@ -1,6 +1,6 @@
 #ifndef _EXTERNAL_COMMANDS_H_
 #define _EXTERNAL_COMMANDS_H_
 
-int external_process(struct cmdline *l);
+pid_t external_process(struct cmdline *l);
 
 #endif
