@@ -1,5 +1,6 @@
 #include "csapp.h"
 #include "piping.h"
+#include "jobs.h"
 
 void pipe_SIGINT_handler(int sig){
     Kill(getppid(),SIGCHLD);
@@ -46,7 +47,7 @@ void pipe_n_instructions(struct cmdline* l, int nb_comms){
         pid_t child_pid;       
         if ((child_pid = Fork() == 0)) { // Child process
             
-            //Setting the group ID to the PID of the father +1
+            
             Signal(SIGINT, pipe_SIGINT_handler);
 
             // Set up redirections

@@ -3,6 +3,7 @@
 #include "readcmd.h"
 #include "csapp.h"
 #include "external_commands.h"
+#include "jobs.h"
 
 void child_SIGINT_handler(int sig){
     Kill(getppid(),SIGCHLD);
@@ -12,7 +13,10 @@ void child_SIGINT_handler(int sig){
 pid_t external_process(struct cmdline *l){
 	int pid_child;
 	if((pid_child= Fork())==0){ /*child */
+		
+		
 		Signal(SIGINT, child_SIGINT_handler);
+		
         /*Handling Redirections*/
 		if(l->in){
 			int f_in = Open(l->in,O_RDONLY,S_IRUSR|S_IWUSR);

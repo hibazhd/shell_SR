@@ -29,7 +29,6 @@ void piping_instructions_background(struct cmdline* l, int nb_pipes){
             if (Fork() == 0) { // Child process   
 
                   Signal(SIGINT, SIG_IGN);
-
                   // Set up redirections
                   if (i > 0) { // If not the first command
                   read_from_pipe(pipes[i - 1]); // Redirect stdin from the previous pipe
