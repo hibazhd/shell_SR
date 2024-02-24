@@ -21,6 +21,8 @@ enum BUILTINS analyse_command(char **l){
 }
 
 int builtin_process(struct cmdline* l){
+    char buf[256];
+    char *log_buf;
     enum BUILTINS command = analyse_command(l->seq[0]);
     int out_flag = 0;
     int f_out;
@@ -48,7 +50,7 @@ int builtin_process(struct cmdline* l){
         return 1;
         break;
     case B_PWD:
-        char buf[256];
+        
         getcwd(buf, 256);
 
             /*In case of redirection*/
@@ -64,7 +66,7 @@ int builtin_process(struct cmdline* l){
         return 1;
         break;
     case B_WHO:
-        char *log_buf = getlogin();
+        log_buf = getlogin();
 
 
             /*In case of redirection*/
